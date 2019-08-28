@@ -4,7 +4,7 @@ type DfaState uint8
 
 //有限状态机的各种状态
 const (
-	DfaState_Initial DfaState = iota
+	DfaState_Initial DfaState = iota + 1
 
 	DfaState_If
 	DfaState_Id_if1
