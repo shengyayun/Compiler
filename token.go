@@ -1,23 +1,9 @@
 //Token相关
 package main
 
-import (
-	"bytes"
-)
-
 type Token struct {
 	Type TokenType
-	text bytes.Buffer
-}
-
-//在文本后添加字符
-func (token *Token) Append(ch rune) {
-	token.text.WriteRune(ch)
-}
-
-//获取token的文本
-func (token *Token) Text() string {
-	return token.text.String()
+	Text string
 }
 
 type TokenType string
