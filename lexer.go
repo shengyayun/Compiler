@@ -1,3 +1,4 @@
+//词法分析
 package main
 
 import (
@@ -19,6 +20,9 @@ func NewLexer() (lexer Lexer) {
 
 //通过首字符初始化Token与Dfa状态
 func (lexer *Lexer) Checkout(ch rune) {
+	if lexer.staged.Text() != "" { //保存历史token
+		lexer.Commit()
+	}
 	if isAlpha(ch) { //字母
 		if ch == 'i' {
 			lexer.state = DfaState_Id_int1
@@ -94,15 +98,11 @@ func (lexer *Lexer) Tokenize(code string) []Token {
 		}
 		switch lexer.state {
 		case DfaState_Initial: //初始状态
-			if lexer.staged.Text() != "" { //保存历史token
-				lexer.Commit()
-			}
 			lexer.Checkout(ch)
 		case DfaState_Id: //标识名
 			if isAlpha(ch) || isDigit(ch) {
 				lexer.Add(ch) //保持标识符状态
 			} else {
-				lexer.Commit()
 				lexer.Checkout(ch)
 			}
 		case DfaState_GT: //>
@@ -111,7 +111,6 @@ func (lexer *Lexer) Tokenize(code string) []Token {
 				lexer.state = DfaState_GE
 				lexer.Add(ch)
 			} else {
-				lexer.Commit()
 				lexer.Checkout(ch)
 			}
 		case DfaState_GE: //>=
@@ -131,13 +130,11 @@ func (lexer *Lexer) Tokenize(code string) []Token {
 		case DfaState_LeftParen: //(
 			fallthrough
 		case DfaState_RightParen: //)
-			lexer.Commit()
 			lexer.Checkout(ch)
 		case DfaState_IntLiteral: //数字
 			if isDigit(ch) {
 				lexer.Add(ch)
 			} else {
-				lexer.Commit()
 				lexer.Checkout(ch)
 			}
 		case DfaState_Id_int1: //i
@@ -148,7 +145,6 @@ func (lexer *Lexer) Tokenize(code string) []Token {
 				lexer.state = DfaState_Id //切换回Id状态
 				lexer.Add(ch)
 			} else {
-				lexer.Commit()
 				lexer.Checkout(ch)
 			}
 		case DfaState_Id_int2:
@@ -159,13 +155,11 @@ func (lexer *Lexer) Tokenize(code string) []Token {
 				lexer.state = DfaState_Id //切换回id状态
 				lexer.Add(ch)
 			} else {
-				lexer.Commit()
 				lexer.Checkout(ch)
 			}
 		case DfaState_Id_int3: //int
 			if isBlank(ch) { //"int"后是空格
 				lexer.staged.Type = TokenType_Int
-				lexer.Commit()
 				lexer.Checkout(ch)
 			} else {
 				lexer.state = DfaState_Id //切换回Id状态
@@ -177,4 +171,19 @@ func (lexer *Lexer) Tokenize(code string) []Token {
 		lexer.Commit()
 	}
 	return lexer.tokens
+}
+
+//是否是字母
+func isAlpha(ch rune) bool {
+	return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z'
+}
+
+//是否是数字
+func isDigit(ch rune) bool {
+	return ch >= '0' && ch <= '9'
+}
+
+//是否是空白字符
+func isBlank(ch rune) bool {
+	return ch == ' ' || ch == '\t' || ch == '\n'
 }

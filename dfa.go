@@ -1,3 +1,4 @@
+//自动机状态枚举
 package main
 
 type DfaState string
