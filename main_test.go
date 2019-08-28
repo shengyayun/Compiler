@@ -15,7 +15,6 @@ func TestTokenize(t *testing.T) {
 
 	lexer := NewLexer()
 	for code, expect := range dict {
-
 		tokens := lexer.Tokenize(code)
 		if len(tokens) != len(expect) {
 			t.Errorf("'%s' tokenize fail", code)
