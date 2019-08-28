@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -21,7 +20,6 @@ func TestTokenize(t *testing.T) {
 		}
 		for i := 0; i < len(tokens); i++ {
 			if tokens[i].Type != expect[i].Type || tokens[i].Text != expect[i].Text {
-				fmt.Println(tokens, expect)
 				t.Errorf("'%s' tokenize fail", code)
 			}
 		}
