@@ -122,24 +122,6 @@ func (lexer *Lexer) Tokenize(code string) []Token {
 			} else {
 				lexer.Checkout(ch)
 			}
-		case DfaState_GE: //>=
-			fallthrough
-		case DfaState_Assignment: //=
-			fallthrough
-		case DfaState_Plus: //+
-			fallthrough
-		case DfaState_Minus: //-
-			fallthrough
-		case DfaState_Star: //*
-			fallthrough
-		case DfaState_Slash: //\
-			fallthrough
-		case DfaState_SemiColon: //;
-			fallthrough
-		case DfaState_LeftParen: //(
-			fallthrough
-		case DfaState_RightParen: //)
-			lexer.Checkout(ch)
 		case DfaState_IntLiteral: //数字
 			if isDigit(ch) {
 				lexer.TokenBuffer.WriteRune(ch)
@@ -174,6 +156,8 @@ func (lexer *Lexer) Tokenize(code string) []Token {
 				lexer.DfaState = DfaState_Id //切换回Id状态
 				lexer.TokenBuffer.WriteRune(ch)
 			}
+		case DfaState_GE, DfaState_Assignment, DfaState_Plus, DfaState_Minus, DfaState_Star, DfaState_Slash, DfaState_SemiColon, DfaState_LeftParen, DfaState_RightParen:
+			lexer.Checkout(ch)
 		}
 	}
 	if lexer.TokenBuffer.String() != "" { //保存历史token
