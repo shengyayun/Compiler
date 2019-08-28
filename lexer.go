@@ -115,13 +115,21 @@ func (lexer *Lexer) Tokenize(code string) []Token {
 				lexer.Checkout(ch)
 			}
 		case DfaState_GE: //>=
+			fallthrough
 		case DfaState_Assignment: //=
+			fallthrough
 		case DfaState_Plus: //+
+			fallthrough
 		case DfaState_Minus: //-
+			fallthrough
 		case DfaState_Star: //*
+			fallthrough
 		case DfaState_Slash: //\
+			fallthrough
 		case DfaState_SemiColon: //;
+			fallthrough
 		case DfaState_LeftParen: //(
+			fallthrough
 		case DfaState_RightParen: //)
 			lexer.Commit()
 			lexer.Checkout(ch)

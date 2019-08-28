@@ -1,11 +1,11 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func main() {
 	lexer := NewLexer()
 	tokens := lexer.Tokenize("int age = 45;")
-	fmt.Println(tokens)
+	for i := 0; i < len(tokens); i++ {
+		fmt.Println(string(tokens[i].Type) + " :  " + tokens[i].Text())
+	}
 }

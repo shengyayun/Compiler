@@ -1,6 +1,8 @@
 package main
 
-import "bytes"
+import (
+	"bytes"
+)
 
 type Token struct {
 	Type TokenType
@@ -17,33 +19,33 @@ func (token *Token) Text() string {
 	return token.text.String()
 }
 
-type TokenType uint8
+type TokenType string
 
 const (
-	TokenType_Plus  TokenType = iota + 1 // +
-	TokenType_Minus                      // -
-	TokenType_Star                       // *
-	TokenType_Slash                      // /
+	TokenType_Plus  TokenType = "Plus"  // +
+	TokenType_Minus           = "Minus" // -
+	TokenType_Star            = "Star"  // *
+	TokenType_Slash           = "Slash" // /
 
-	TokenType_GE // >=
-	TokenType_GT // >
-	TokenType_EQ // ==
-	TokenType_LE // <=
-	TokenType_LT // <
+	TokenType_GE = "GE" // >=
+	TokenType_GT = "GT" // >
+	TokenType_EQ = "EQ" // ==
+	TokenType_LE = "LE" // <=
+	TokenType_LT = "LT" // <
 
-	TokenType_SemiColon  // ;
-	TokenType_LeftParen  // (
-	TokenType_RightParen // )
+	TokenType_SemiColon  = "SemiColon"  // ;
+	TokenType_LeftParen  = "LeftParen"  // (
+	TokenType_RightParen = "RightParen" // )
 
-	TokenType_Assignment // =
+	TokenType_Assignment = "Assignment" // =
 
-	TokenType_If
-	TokenType_Else
+	TokenType_If   = "If"
+	TokenType_Else = "Else"
 
-	TokenType_Int
+	TokenType_Int = "Int"
 
-	TokenType_Identifier //标识符
+	TokenType_Identifier = "Identifier" //标识符
 
-	TokenType_IntLiteral    //整型字面量
-	TokenType_StringLiteral //字符串字面量
+	TokenType_IntLiteral    = "IntLiteral"    //整型字面量
+	TokenType_StringLiteral = "StringLiteral" //字符串字面量
 )
