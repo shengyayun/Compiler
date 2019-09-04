@@ -1,20 +1,22 @@
 package main
 
 import (
+	"craft/lexer"
+	"craft/lib"
 	"testing"
 )
 
 func TestTokenize(t *testing.T) {
-	dict := make(map[string][]Token)
+	dict := make(map[string][]lib.Token)
 
-	dict["inta age = 45;"] = []Token{Token{TokenType_Identifier, "inta"}, Token{TokenType_Identifier, "age"}, Token{TokenType_Assignment, "="}, Token{TokenType_IntLiteral, "45"}, Token{TokenType_SemiColon, ";"}}
-	dict["int age = 45;"] = []Token{Token{TokenType_Int, "int"}, Token{TokenType_Identifier, "age"}, Token{TokenType_Assignment, "="}, Token{TokenType_IntLiteral, "45"}, Token{TokenType_SemiColon, ";"}}
-	dict["age >= 45;"] = []Token{Token{TokenType_Identifier, "age"}, Token{TokenType_GE, ">="}, Token{TokenType_IntLiteral, "45"}, Token{TokenType_SemiColon, ";"}}
-	dict["age > 45;"] = []Token{Token{TokenType_Identifier, "age"}, Token{TokenType_GT, ">"}, Token{TokenType_IntLiteral, "45"}, Token{TokenType_SemiColon, ";"}}
+	dict["inta age = 45;"] = []lib.Token{lib.Token{Type: lib.TokenType_Identifier, Text: "inta"}, lib.Token{Type: lib.TokenType_Identifier, Text: "age"}, lib.Token{Type: lib.TokenType_Assignment, Text: "="}, lib.Token{Type: lib.TokenType_IntLiteral, Text: "45"}, lib.Token{Type: lib.TokenType_SemiColon, Text: ";"}}
+	dict["int age = 45;"] = []lib.Token{lib.Token{Type: lib.TokenType_Int, Text: "int"}, lib.Token{Type: lib.TokenType_Identifier, Text: "age"}, lib.Token{Type: lib.TokenType_Assignment, Text: "="}, lib.Token{Type: lib.TokenType_IntLiteral, Text: "45"}, lib.Token{Type: lib.TokenType_SemiColon, Text: ";"}}
+	dict["age >= 45;"] = []lib.Token{lib.Token{Type: lib.TokenType_Identifier, Text: "age"}, lib.Token{Type: lib.TokenType_GE, Text: ">="}, lib.Token{Type: lib.TokenType_IntLiteral, Text: "45"}, lib.Token{Type: lib.TokenType_SemiColon, Text: ";"}}
+	dict["age > 45;"] = []lib.Token{lib.Token{Type: lib.TokenType_Identifier, Text: "age"}, lib.Token{Type: lib.TokenType_GT, Text: ">"}, lib.Token{Type: lib.TokenType_IntLiteral, Text: "45"}, lib.Token{Type: lib.TokenType_SemiColon, Text: ";"}}
 
-	lexer := NewLexer()
+	l := lexer.NewLexer()
 	for code, expect := range dict {
-		tokens := lexer.Tokenize(code)
+		tokens := l.Tokenize(code)
 		if len(tokens) != len(expect) {
 			t.Errorf("'%s' tokenize fail", code)
 		}

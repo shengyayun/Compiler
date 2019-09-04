@@ -1,5 +1,5 @@
 //自动机状态枚举
-package main
+package lexer
 
 type DfaState string
 

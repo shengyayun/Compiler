@@ -1,5 +1,5 @@
 //抽象语法树相关
-package main
+package lib
 
 //抽象语法树的节点
 type ASTNode struct {

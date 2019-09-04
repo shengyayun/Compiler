@@ -1,7 +1,10 @@
 //语义分析
-package main
+package parser
 
-import "fmt"
+import (
+	"craft/lib"
+	"fmt"
+)
 
 /**
  * 一个简单的语法解析器。
@@ -21,9 +24,8 @@ func NewParser() Parser {
 	return Parser{}
 }
 
-func (parse *Parser) parse(script string) ASTNode {
-	lexer := NewLexer()
-	tokens := lexer.Tokenize(script)
-	fmt.Println(tokens)
-	return ASTNode{}
+func (parse *Parser) Parse(tokens *([]lib.Token)) lib.ASTNode {
+	reader := NewTokenReader(tokens)
+	fmt.Println(reader)
+	return lib.ASTNode{}
 }

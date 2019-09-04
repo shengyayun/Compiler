@@ -1,8 +1,9 @@
 //词法分析
-package main
+package lexer
 
 import (
 	"bytes"
+	"craft/lib"
 	"io"
 	"strings"
 )
@@ -10,15 +11,15 @@ import (
 type Lexer struct {
 	dfaState DfaState //Dfa状态
 
-	tokenType   TokenType    //Token类型
-	tokenBuffer bytes.Buffer //Token内容
+	tokenType   lib.TokenType //Token类型
+	tokenBuffer bytes.Buffer  //Token内容
 
-	result []*Token //token结果列表
+	result []lib.Token //token结果列表
 }
 
 func NewLexer() (lexer Lexer) {
 	lexer.dfaState = DfaState_Initial
-	lexer.result = make([]*Token, 0)
+	lexer.result = make([]lib.Token, 0)
 	return
 }
 
@@ -40,47 +41,47 @@ func (lexer *Lexer) Checkout(ch rune) {
 		} else {
 			lexer.dfaState = DfaState_Id //进入Id状态
 		}
-		lexer.tokenType = TokenType_Identifier
+		lexer.tokenType = lib.TokenType_Identifier
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if isDigit(ch) { //数字
 		lexer.dfaState = DfaState_IntLiteral
-		lexer.tokenType = TokenType_IntLiteral
+		lexer.tokenType = lib.TokenType_IntLiteral
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if ch == '>' {
 		lexer.dfaState = DfaState_GT
-		lexer.tokenType = TokenType_GT
+		lexer.tokenType = lib.TokenType_GT
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if ch == '+' {
 		lexer.dfaState = DfaState_Plus
-		lexer.tokenType = TokenType_Plus
+		lexer.tokenType = lib.TokenType_Plus
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if ch == '-' {
 		lexer.dfaState = DfaState_Minus
-		lexer.tokenType = TokenType_Minus
+		lexer.tokenType = lib.TokenType_Minus
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if ch == '*' {
 		lexer.dfaState = DfaState_Star
-		lexer.tokenType = TokenType_Star
+		lexer.tokenType = lib.TokenType_Star
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if ch == '/' {
 		lexer.dfaState = DfaState_Slash
-		lexer.tokenType = TokenType_Slash
+		lexer.tokenType = lib.TokenType_Slash
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if ch == ';' {
 		lexer.dfaState = DfaState_SemiColon
-		lexer.tokenType = TokenType_SemiColon
+		lexer.tokenType = lib.TokenType_SemiColon
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if ch == '(' {
 		lexer.dfaState = DfaState_LeftParen
-		lexer.tokenType = TokenType_LeftParen
+		lexer.tokenType = lib.TokenType_LeftParen
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if ch == ')' {
 		lexer.dfaState = DfaState_RightParen
-		lexer.tokenType = TokenType_RightParen
+		lexer.tokenType = lib.TokenType_RightParen
 		lexer.tokenBuffer.WriteRune(ch)
 	} else if ch == '=' {
 		lexer.dfaState = DfaState_Assignment
-		lexer.tokenType = TokenType_Assignment
+		lexer.tokenType = lib.TokenType_Assignment
 		lexer.tokenBuffer.WriteRune(ch)
 	} else {
 		lexer.dfaState = DfaState_Initial
@@ -89,14 +90,14 @@ func (lexer *Lexer) Checkout(ch rune) {
 
 //提交当前token
 func (lexer *Lexer) Commit() {
-	lexer.result = append(lexer.result, &Token{lexer.tokenType, lexer.tokenBuffer.String()})
+	lexer.result = append(lexer.result, lib.Token{Type: lexer.tokenType, Text: lexer.tokenBuffer.String()})
 
 	lexer.tokenType = ""
 	lexer.tokenBuffer.Reset()
 }
 
 //开始词法分析
-func (lexer *Lexer) Tokenize(code string) TokenReader {
+func (lexer *Lexer) Tokenize(code string) []lib.Token {
 	lexer.Reset()
 	var ch rune
 	var err error
@@ -116,7 +117,7 @@ func (lexer *Lexer) Tokenize(code string) TokenReader {
 			}
 		case DfaState_GT: //>
 			if ch == '=' { //>=
-				lexer.tokenType = TokenType_GE
+				lexer.tokenType = lib.TokenType_GE
 				lexer.dfaState = DfaState_GE
 				lexer.tokenBuffer.WriteRune(ch)
 			} else {
@@ -150,7 +151,7 @@ func (lexer *Lexer) Tokenize(code string) TokenReader {
 			}
 		case DfaState_Id_int3: //int
 			if isBlank(ch) { //"int"后是空格
-				lexer.tokenType = TokenType_Int
+				lexer.tokenType = lib.TokenType_Int
 				lexer.Checkout(ch)
 			} else {
 				lexer.dfaState = DfaState_Id //切换回Id状态
@@ -163,7 +164,7 @@ func (lexer *Lexer) Tokenize(code string) TokenReader {
 	if lexer.tokenBuffer.String() != "" { //保存历史token
 		lexer.Commit()
 	}
-	return NewTokenReader(lexer.result)
+	return lexer.result
 }
 
 //是否是字母
