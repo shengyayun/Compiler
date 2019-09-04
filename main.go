@@ -3,9 +3,8 @@ package main
 import "fmt"
 
 func main() {
-	lexer := NewLexer()
-	tokens := lexer.Tokenize("int age = 45;")
-	for i := 0; i < len(tokens); i++ {
-		fmt.Println(string(tokens[i].Type) + " :  " + tokens[i].Text)
-	}
+	script := "int age = 45+2; age= 20; age+10*2;"
+	parser := NewParser()
+	tree := parser.parse(script)
+	fmt.Println(tree)
 }
