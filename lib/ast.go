@@ -9,6 +9,17 @@ type ASTNode struct {
 	Text     string      //节点内容
 }
 
+//返回一个新的抽象语法树节点的指针
+func NewASTNode(t ASTNodeType, s string) *ASTNode {
+	return &ASTNode{Type: t, Text: s}
+}
+
+//将一个节点指定为当前节点的子节点
+func (ast *ASTNode) Append(child *ASTNode) {
+	child.Parent = ast
+	ast.Children = append(ast.Children, child)
+}
+
 //抽象语法树类型
 type ASTNodeType string
 
