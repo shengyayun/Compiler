@@ -103,7 +103,7 @@ func expressionStatement(reader *TokenReader) (*lib.ASTNode, error) {
 	if child, err := additive(reader); err == nil {
 		if token := reader.Peek(); token != nil && token.Type == lib.TokenType_SemiColon {
 			reader.Read()
-			node := lib.NewASTNode(lib.ASTNodeType_ExpressionStmt, token.Text)
+			node := lib.NewASTNode(lib.ASTNodeType_ExpressionStmt, "")
 			node.Append(child)
 			return node, nil
 		} //回溯

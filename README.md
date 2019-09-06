@@ -22,4 +22,3 @@ additive -> multiplicative ( (+ | -) multiplicative)*
 multiplicative -> primary ( (* | /) primary)*
 primary -> IntLiteral | Id | '(' additive ')'
 ```
-

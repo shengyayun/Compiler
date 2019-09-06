@@ -1,33 +1,37 @@
 package lib
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 )
 
 //打印Token流
-func (tokens *Tokens) Dump() {
-	split("tokens")
+func (tokens *Tokens) Dump(print bool) string {
+	var buffer bytes.Buffer
 	for _, token := range []Token(*tokens) {
-		fmt.Printf("%-16s : %s\n", token.Type, token.Text)
+		buffer.WriteString(fmt.Sprintf("%-16s : %s\n", token.Type, token.Text))
 	}
+	if print {
+		fmt.Print(buffer.String())
+	}
+	return buffer.String()
 }
 
 //打印抽象语法树
-func (ast *ASTNode) Dump() {
-	split("ast")
-	ast.dump(0)
-}
-
-//打印分割线
-func split(title string) {
-	fmt.Println(strings.Repeat("-", 12), title, strings.Repeat("-", 12))
+func (ast *ASTNode) Dump(print bool) string {
+	var buffer bytes.Buffer
+	ast.dump(&buffer, 0)
+	if print {
+		fmt.Print(buffer.String())
+	}
+	return buffer.String()
 }
 
 //抽象语法树打印实现
-func (ast *ASTNode) dump(indent int) {
-	fmt.Printf("%-16s : %s\n", strings.Repeat(" ", indent)+string(ast.Type), ast.Text)
+func (ast *ASTNode) dump(buffer *bytes.Buffer, indent int) {
+	buffer.WriteString(fmt.Sprintf("%-16s : %s\n", strings.Repeat(" ", indent)+string(ast.Type), ast.Text))
 	for _, child := range ast.Children {
-		child.dump(indent + 1)
+		child.dump(buffer, indent+1)
 	}
 }
