@@ -1,5 +1,7 @@
 ## 简单易懂的编译器
 
+[![LICENSE](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/shengyayun/Compiler/blob/master/LICENSE)
+
 > 学习资料：[《编译原理之美》](https://time.geekbang.org/column/intro/219) 宫文学 北京物演科技CEO
 
 一个能解析简单的表达式、变量声明和初始化语句、赋值语句的编译器。
