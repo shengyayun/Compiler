@@ -14,8 +14,9 @@ import (
  *
  * programm -> intDeclare | expressionStatement | assignmentStatement
  * intDeclare -> 'int' Id ( = additive) ';'
- * expressionStatement -> addtive ';'
- * addtive -> multiplicative ( (+ | -) multiplicative)*
+ * expressionStatement -> additive ';'
+ * assignmentStatement -> id = additive ';'
+ * additive -> multiplicative ( (+ | -) multiplicative)*
  * multiplicative -> primary ( (* | /) primary)*
  * primary -> IntLiteral | Id | '(' additive ')'
  */
@@ -25,7 +26,11 @@ func NewParser() Parser {
 	return Parser{}
 }
 
-//将token流解析为抽象语法树
+/**
+ * 将token流解析为抽象语法树
+ *
+ * programm -> intDeclare | expressionStatement | assignmentStatement
+ */
 func (parse *Parser) Parse(tokens *lib.Tokens) (*lib.ASTNode, error) {
 	reader := NewTokenReader(tokens)
 	//只有一个根节点的抽象语法树
@@ -56,12 +61,12 @@ func (parse *Parser) Parse(tokens *lib.Tokens) (*lib.ASTNode, error) {
 }
 
 /**
- * 整型变量声明，如：
- * int a;
- * int a = 2*3;
+ * 整型变量声明语句
+ *
+ * intDeclare -> 'int' Id ( = additive) ';'
  */
 func intDeclare(reader *TokenReader) (*lib.ASTNode, error) {
-	if token := reader.Peek(); token != nil && token.Type == lib.TokenType_Int { //int
+	if token := reader.Peek(); token.Type == lib.TokenType_Int { //int
 		reader.Read()
 		if token = reader.Peek(); token != nil && token.Type == lib.TokenType_Identifier { //a
 			reader.Read()
@@ -88,47 +93,81 @@ func intDeclare(reader *TokenReader) (*lib.ASTNode, error) {
 	return nil, io.EOF
 }
 
+/**
+ * 表达式语句
+ *
+ * expressionStatement -> additive ';'
+ */
 func expressionStatement(reader *TokenReader) (*lib.ASTNode, error) {
+	pos := reader.Position()
+	if child, err := additive(reader); err == nil {
+		if token := reader.Peek(); token != nil && token.Type == lib.TokenType_SemiColon {
+			reader.Read()
+			node := lib.NewASTNode(lib.ASTNodeType_ExpressionStmt, token.Text)
+			node.Append(child)
+			return node, nil
+		} //回溯
+		reader.SetPosition(pos)
+	}
 	return nil, io.EOF
 }
 
+/**
+ * 赋值语句
+ *
+ * assignmentStatement -> id = additive ';'
+ */
 func assignmentStatement(reader *TokenReader) (*lib.ASTNode, error) {
+	if token := reader.Peek(); token.Type == lib.TokenType_Identifier { //id
+		node := lib.NewASTNode(lib.ASTNodeType_AssignmentStmt, token.Text)
+		reader.Read()
+		if token := reader.Peek(); token != nil && token.Type == lib.TokenType_Assignment { // =
+			reader.Read()
+			if child, err := additive(reader); err == nil { //additive
+				node.Append(child)
+				if token := reader.Peek(); token != nil && token.Type == lib.TokenType_SemiColon { //;
+					reader.Read()
+					return node, nil
+				}
+				return nil, errors.New("invalid statement, expecting semicolon")
+			}
+			return nil, errors.New("invalide assignment statement, expecting an expression")
+		}
+		reader.Unread()
+	}
 	return nil, io.EOF
 }
 
 /**
  * 加法表达式
- * addtive -> multiplicative ( (+ | -) multiplicative)*
+ * additive -> multiplicative ( (+ | -) multiplicative)*
  */
 func additive(reader *TokenReader) (*lib.ASTNode, error) {
-	if token := reader.Peek(); token != nil {
-		var node, child1 *lib.ASTNode
-		var err error
-		if child1, err = multiplicative(reader); err != nil {
-			return nil, err
-		}
-		node = child1
-		for {
-			if token := reader.Peek(); token.Type == lib.TokenType_Plus || token.Type == lib.TokenType_Minus { // + 或者 -
-				//该代码块中不匹配会被判定为语法错误
-				reader.Read()
-				if child2, err := multiplicative(reader); err == nil {
-					node = lib.NewASTNode(lib.ASTNodeType_Additive, token.Text)
-					node.Append(child1)
-					node.Append(child2)
-					child1 = node
-				} else if err == io.EOF { //匹配失败
-					return nil, errors.New("invalid additive expression, expecting the right part")
-				} else { //语法错误
-					return nil, err
-				}
-			} else {
-				break
-			}
-		}
-		return node, nil
+	var node, child1 *lib.ASTNode
+	var err error
+	if child1, err = multiplicative(reader); err != nil {
+		return nil, err
 	}
-	return nil, io.EOF
+	node = child1
+	for {
+		if token := reader.Peek(); token.Type == lib.TokenType_Plus || token.Type == lib.TokenType_Minus { // + 或者 -
+			//该代码块中不匹配会被判定为语法错误
+			reader.Read()
+			if child2, err := multiplicative(reader); err == nil {
+				node = lib.NewASTNode(lib.ASTNodeType_Additive, token.Text)
+				node.Append(child1)
+				node.Append(child2)
+				child1 = node
+			} else if err == io.EOF { //匹配失败
+				return nil, errors.New("invalid additive expression, expecting the right part")
+			} else { //语法错误
+				return nil, err
+			}
+		} else {
+			break
+		}
+	}
+	return node, nil
 }
 
 /**
@@ -136,34 +175,31 @@ func additive(reader *TokenReader) (*lib.ASTNode, error) {
  * multiplicative -> primary ( (* | /) primary)*
  */
 func multiplicative(reader *TokenReader) (*lib.ASTNode, error) {
-	if token := reader.Peek(); token != nil {
-		var node, child1 *lib.ASTNode
-		var err error
-		if child1, err = primary(reader); err != nil { //语法错误或不匹配
-			return nil, err
-		}
-		node = child1
-		for {
-			if token := reader.Peek(); token.Type == lib.TokenType_Star || token.Type == lib.TokenType_Slash { // * 或者 /
-				//该代码块中不匹配会被判定为语法错误
-				reader.Read()
-				if child2, err := primary(reader); err == nil {
-					node = lib.NewASTNode(lib.ASTNodeType_Multiplicative, token.Text)
-					node.Append(child1)
-					node.Append(child2)
-					child1 = node
-				} else if err == io.EOF { //匹配失败
-					return nil, errors.New("invalid multiplicative expression, expecting the right part")
-				} else { //语法错误
-					return nil, err
-				}
-			} else {
-				break
-			}
-		}
-		return node, nil
+	var node, child1 *lib.ASTNode
+	var err error
+	if child1, err = primary(reader); err != nil { //语法错误或不匹配
+		return nil, err
 	}
-	return nil, io.EOF
+	node = child1
+	for {
+		if token := reader.Peek(); token.Type == lib.TokenType_Star || token.Type == lib.TokenType_Slash { // * 或者 /
+			//该代码块中不匹配会被判定为语法错误
+			reader.Read()
+			if child2, err := primary(reader); err == nil {
+				node = lib.NewASTNode(lib.ASTNodeType_Multiplicative, token.Text)
+				node.Append(child1)
+				node.Append(child2)
+				child1 = node
+			} else if err == io.EOF { //匹配失败
+				return nil, errors.New("invalid multiplicative expression, expecting the right part")
+			} else { //语法错误
+				return nil, err
+			}
+		} else {
+			break
+		}
+	}
+	return node, nil
 }
 
 /**
@@ -171,28 +207,27 @@ func multiplicative(reader *TokenReader) (*lib.ASTNode, error) {
  * primary -> IntLiteral | Id | '(' additive ')'
  */
 func primary(reader *TokenReader) (*lib.ASTNode, error) {
-	if token := reader.Peek(); token != nil {
-		if token.Type == lib.TokenType_IntLiteral { //IntLiteral
-			reader.Read()
-			return lib.NewASTNode(lib.ASTNodeType_IntLiteral, token.Text), nil
-		} else if token.Type == lib.TokenType_Identifier { //Id
-			reader.Read()
-			return lib.NewASTNode(lib.ASTNodeType_Identifier, token.Text), nil
-		} else if token = reader.Peek(); token.Type == lib.TokenType_LeftParen { // 左括号
-			//该代码块中不匹配会被判定为语法错误
-			reader.Read()
-			if node, err := additive(reader); err == nil { //additive
-				if token = reader.Peek(); token != nil && token.Type == lib.TokenType_RightParen { // 右括号
-					reader.Read()
-					return node, nil
-				}
-			} else if err == io.EOF { //不匹配加法表达式
-				return nil, errors.New("expecting an additive expression inside parenthesis")
-			} else { //语法错误
-				return nil, err
+	token := reader.Peek()
+	if token.Type == lib.TokenType_IntLiteral { //IntLiteral
+		reader.Read()
+		return lib.NewASTNode(lib.ASTNodeType_IntLiteral, token.Text), nil
+	} else if token.Type == lib.TokenType_Identifier { //Id
+		reader.Read()
+		return lib.NewASTNode(lib.ASTNodeType_Identifier, token.Text), nil
+	} else if token = reader.Peek(); token.Type == lib.TokenType_LeftParen { // 左括号
+		//该代码块中不匹配会被判定为语法错误
+		reader.Read()
+		if node, err := additive(reader); err == nil { //additive
+			if token = reader.Peek(); token != nil && token.Type == lib.TokenType_RightParen { // 右括号
+				reader.Read()
+				return node, nil
 			}
-			return nil, errors.New("expecting right parenthesis") //没有找到右括号
+		} else if err == io.EOF { //不匹配加法表达式
+			return nil, errors.New("expecting an additive expression inside parenthesis")
+		} else { //语法错误
+			return nil, err
 		}
+		return nil, errors.New("expecting right parenthesis") //没有找到右括号
 	}
 	return nil, io.EOF
 }
