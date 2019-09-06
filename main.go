@@ -1,8 +1,8 @@
 package main
 
 import (
-	"craft/lexer"
-	"craft/parser"
+	"compiler/lexer"
+	"compiler/parser"
 	"fmt"
 )
 

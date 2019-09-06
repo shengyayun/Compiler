@@ -3,7 +3,7 @@ package lexer
 
 import (
 	"bytes"
-	"craft/lib"
+	"compiler/lib"
 	"io"
 	"strings"
 )

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"craft/lexer"
-	"craft/lib"
+	"compiler/lexer"
+	"compiler/lib"
 	"testing"
 )
 

@@ -2,7 +2,7 @@
 package parser
 
 import (
-	"craft/lib"
+	"compiler/lib"
 	"errors"
 	"io"
 )
