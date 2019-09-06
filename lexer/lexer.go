@@ -97,7 +97,7 @@ func (lexer *Lexer) Commit() {
 }
 
 //开始词法分析
-func (lexer *Lexer) Tokenize(code string) []lib.Token {
+func (lexer *Lexer) Tokenize(code string) lib.Tokens {
 	lexer.Reset()
 	var ch rune
 	var err error

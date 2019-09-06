@@ -6,6 +6,9 @@ type Token struct {
 	Text string
 }
 
+//Token流
+type Tokens []Token
+
 type TokenType string
 
 const (

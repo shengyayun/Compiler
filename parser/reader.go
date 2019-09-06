@@ -6,11 +6,11 @@ import (
 )
 
 type TokenReader struct {
-	tokens *([]lib.Token)
+	tokens *lib.Tokens
 	pos    int
 }
 
-func NewTokenReader(tokens *([]lib.Token)) TokenReader {
+func NewTokenReader(tokens *lib.Tokens) TokenReader {
 	return TokenReader{tokens: tokens, pos: 0}
 }
 

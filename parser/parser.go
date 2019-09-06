@@ -26,7 +26,7 @@ func NewParser() Parser {
 }
 
 //将token流解析为抽象语法树
-func (parse *Parser) Parse(tokens *([]lib.Token)) (*lib.ASTNode, error) {
+func (parse *Parser) Parse(tokens *lib.Tokens) (*lib.ASTNode, error) {
 	reader := NewTokenReader(tokens)
 	//只有一个根节点的抽象语法树
 	tree := lib.ASTNode{Type: lib.ASTNodeType_Programm, Text: "pwc"}
@@ -38,12 +38,18 @@ func (parse *Parser) Parse(tokens *([]lib.Token)) (*lib.ASTNode, error) {
 		if reader.Peek() == nil {
 			break
 		}
+		child = nil
 		for _, method := range handler {
 			if child, err = method(&reader); err == nil {
-				tree.Append(child)
+				break
 			} else if err != io.EOF {
 				return nil, err
 			}
+		}
+		if child != nil {
+			tree.Append(child)
+		} else {
+			return nil, errors.New("unknown statement")
 		}
 	}
 	return &tree, nil
@@ -71,14 +77,13 @@ func intDeclare(reader *TokenReader) (*lib.ASTNode, error) {
 					return nil, err //语法错误
 				}
 			}
-		} else {
-			return nil, errors.New("variable name expected") //语法错误：找不到变量名
-		}
-		if token = reader.Peek(); token != nil && token.Type == lib.TokenType_SemiColon {
-			reader.Read()
-		} else {
+			if token = reader.Peek(); token != nil && token.Type == lib.TokenType_SemiColon { // ;
+				reader.Read()
+				return node, nil
+			}
 			return nil, errors.New("invalid statement, expecting semicolon") //语法错误：找不到分号
 		}
+		return nil, errors.New("variable name expected") //语法错误：找不到变量名
 	}
 	return nil, io.EOF
 }
@@ -96,6 +101,33 @@ func assignmentStatement(reader *TokenReader) (*lib.ASTNode, error) {
  * addtive -> multiplicative ( (+ | -) multiplicative)*
  */
 func additive(reader *TokenReader) (*lib.ASTNode, error) {
+	if token := reader.Peek(); token != nil {
+		var node, child1 *lib.ASTNode
+		var err error
+		if child1, err = multiplicative(reader); err != nil {
+			return nil, err
+		}
+		node = child1
+		for {
+			if token := reader.Peek(); token.Type == lib.TokenType_Plus || token.Type == lib.TokenType_Minus { // + 或者 -
+				//该代码块中不匹配会被判定为语法错误
+				reader.Read()
+				if child2, err := multiplicative(reader); err == nil {
+					node = lib.NewASTNode(lib.ASTNodeType_Additive, token.Text)
+					node.Append(child1)
+					node.Append(child2)
+					child1 = node
+				} else if err == io.EOF { //匹配失败
+					return nil, errors.New("invalid additive expression, expecting the right part")
+				} else { //语法错误
+					return nil, err
+				}
+			} else {
+				break
+			}
+		}
+		return node, nil
+	}
 	return nil, io.EOF
 }
 
