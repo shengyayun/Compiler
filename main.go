@@ -1,27 +1,42 @@
 package main
 
 import (
-	"compiler/lexer"
-	"compiler/parser"
+	"Compiler/lexer"
+	"Compiler/parser"
+	"bufio"
 	"fmt"
+	"os"
 )
 
-func main() {
-	//代码
-	script := "int age = 45+2; age= 20; age+10*2;"
+var lx lexer.Lexer
+var ps parser.Parser
 
+func init() {
+	lx = lexer.NewLexer()
+	ps = parser.NewParser()
+}
+
+func main() {
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print("> ")
+	for scanner.Scan() {
+		script := scanner.Text()
+		compile(script)
+		fmt.Print("\n> ")
+	}
+}
+
+func compile(script string) {
 	//词法分析
 	fmt.Println("-------------", "词法分析", "-------------")
-	l := lexer.NewLexer()
-	tokens := l.Tokenize(script)
+	tokens := lx.Tokenize(script)
 	tokens.Dump(true)
 
 	//语义分析
 	fmt.Println("-------------", "语义分析", "-------------")
-	p := parser.NewParser()
-	if tree, err := p.Parse(&tokens); err == nil {
+	if tree, err := ps.Parse(&tokens); err == nil {
 		tree.Dump(true)
 	} else {
-		fmt.Println("ex: ", err)
+		fmt.Println(err)
 	}
 }
