@@ -60,6 +60,7 @@ func TestParse(t *testing.T) {
 	}
 }
 
+//测试程序执行
 func TestEvaluate(t *testing.T) {
 	dict := make(map[string]int)
 	dict["int age = 18; age;"] = 18
