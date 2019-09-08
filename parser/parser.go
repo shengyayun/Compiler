@@ -2,7 +2,7 @@
 package parser
 
 import (
-	"compiler/lib"
+	"Compiler/lib"
 	"errors"
 	"io"
 )
@@ -54,7 +54,7 @@ func (parse *Parser) Parse(tokens *lib.Tokens) (*lib.ASTNode, error) {
 		if child != nil {
 			tree.Append(child)
 		} else {
-			return nil, errors.New("unknown statement")
+			return nil, errors.New("未知的语法")
 		}
 	}
 	return &tree, nil
@@ -77,7 +77,7 @@ func intDeclare(reader *TokenReader) (*lib.ASTNode, error) {
 				if child, err := additive(reader); err == nil { //匹配加法表达式
 					node.Append(child)
 				} else if err == io.EOF { //不匹配
-					return nil, errors.New("invalide variable initialization, expecting an expression")
+					return nil, errors.New("语法错误：整形变量声明中缺少表达式语句")
 				} else {
 					return nil, err //语法错误
 				}
@@ -86,9 +86,9 @@ func intDeclare(reader *TokenReader) (*lib.ASTNode, error) {
 				reader.Read()
 				return node, nil
 			}
-			return nil, errors.New("invalid statement, expecting semicolon") //语法错误：找不到分号
+			return nil, errors.New("语法错误：整形变量声明中缺少分号") //语法错误：找不到分号
 		}
-		return nil, errors.New("variable name expected") //语法错误：找不到变量名
+		return nil, errors.New("语法错误：整形变量声明中缺少变量名") //语法错误：找不到变量名
 	}
 	return nil, io.EOF
 }
@@ -129,9 +129,9 @@ func assignmentStatement(reader *TokenReader) (*lib.ASTNode, error) {
 					reader.Read()
 					return node, nil
 				}
-				return nil, errors.New("invalid statement, expecting semicolon")
+				return nil, errors.New("语法错误：赋值语句中缺少分号")
 			}
-			return nil, errors.New("invalide assignment statement, expecting an expression")
+			return nil, errors.New("语法错误：赋值语句中缺少表达式语句")
 		}
 		reader.Unread()
 	}
@@ -159,7 +159,7 @@ func additive(reader *TokenReader) (*lib.ASTNode, error) {
 				node.Append(child2)
 				child1 = node
 			} else if err == io.EOF { //匹配失败
-				return nil, errors.New("invalid additive expression, expecting the right part")
+				return nil, errors.New("语法错误：加法表达式中缺少右部分")
 			} else { //语法错误
 				return nil, err
 			}
@@ -191,7 +191,7 @@ func multiplicative(reader *TokenReader) (*lib.ASTNode, error) {
 				node.Append(child2)
 				child1 = node
 			} else if err == io.EOF { //匹配失败
-				return nil, errors.New("invalid multiplicative expression, expecting the right part")
+				return nil, errors.New("语法错误：乘法表达式中缺少右部分")
 			} else { //语法错误
 				return nil, err
 			}
@@ -203,7 +203,7 @@ func multiplicative(reader *TokenReader) (*lib.ASTNode, error) {
 }
 
 /**
- * 基础表达式
+ * 基础表达式（为了简化语法树，直接返回子节点）
  * primary -> IntLiteral | Id | '(' additive ')'
  */
 func primary(reader *TokenReader) (*lib.ASTNode, error) {
@@ -223,11 +223,11 @@ func primary(reader *TokenReader) (*lib.ASTNode, error) {
 					return node, nil
 				}
 			} else if err == io.EOF { //不匹配加法表达式
-				return nil, errors.New("expecting an additive expression inside parenthesis")
+				return nil, errors.New("语法错误：基础表达式中括号内不是一个加法表达式")
 			} else { //语法错误
 				return nil, err
 			}
-			return nil, errors.New("expecting right parenthesis") //没有找到右括号
+			return nil, errors.New("语法错误：基础表达式中缺少右括号") //没有找到右括号
 		}
 	}
 	return nil, io.EOF

@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"compiler/lib"
+	"Compiler/lib"
 	"errors"
 )
 

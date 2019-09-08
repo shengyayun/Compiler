@@ -2,8 +2,8 @@
 package lexer
 
 import (
+	"Compiler/lib"
 	"bytes"
-	"compiler/lib"
 	"io"
 	"strings"
 )

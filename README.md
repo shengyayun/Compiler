@@ -10,8 +10,8 @@
 
 1. [x] 词法分析：通过有穷自动机将代码转换为token流
 2. [x] 语义分析：将token流转换为抽象语法树（AST）
-3. [ ] 执行程序：运行抽象语法树
-4. [ ] REPL：Read-Eval-Print Loop
+3. [x] 执行程序：运行抽象语法树
+4. [x] REPL：Read-Eval-Print Loop
 
 #### 扩展巴科斯范式
 
