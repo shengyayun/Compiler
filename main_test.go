@@ -55,7 +55,7 @@ func TestParse(t *testing.T) {
 				t.Errorf("'%s' tokenize fail", k)
 			}
 		} else {
-			t.Errorf("'%s' parse fail", k)
+			t.Errorf("'%s' parse fail : %s", k, err.Error())
 		}
 	}
 }
@@ -74,10 +74,10 @@ func TestEvaluate(t *testing.T) {
 					t.Errorf("'%s' tokenize fail", k)
 				}
 			} else {
-				t.Errorf("'%s' evaluate fail", k)
+				t.Errorf("'%s' evaluate fail : %s", k, err.Error())
 			}
 		} else {
-			t.Errorf("'%s' parse fail", k)
+			t.Errorf("'%s' parse fail : %s", k, err.Error())
 		}
 	}
 }
